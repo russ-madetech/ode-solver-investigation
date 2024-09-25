@@ -1,5 +1,4 @@
-use nalgebra::{vector, OVector, U3};
-use ode_solvers::{dop_shared::{FloatNumber, OutputType}, Dopri5, Rk4, System, Vector1, Vector3};
+use ode_solvers::{dop_shared::OutputType, Dopri5, System, Vector1};
 
 type State = Vector1<f64>; // type State = OVector<f32, U3>;
 type Time = f64;
@@ -22,7 +21,7 @@ fn main() {
     let x_end: Time = 5.; // x_end - Final value of the independent variable
 
     // Problem 1 - Python doesn't take a timestep (dx). Seems to figure it out itself...
-    let dx = 0.1; // dx - Increment in the dense output. This argument has no effect if the output type is Sparse
+    let dx = 0.; // dx - Increment in the dense output. This argument has no effect if the output type is Sparse
      
     let y0: State = State::new(2.); // y - Initial value of the dependent variable(s)
 
@@ -31,10 +30,11 @@ fn main() {
     let rtol = 1e-3; // rtol - Relative tolerance used in the computation of the adaptive step size
     let atol = 1e-6; // 0.0000000001; // atol - Absolute tolerance used in the computation of the adaptive step size
     let h = 0.;
-    let safety_factor = 1.;
-    let beta = 0.04; // based on https://github.com/scipy/scipy/blob/6b657ede0c3c4cffef3156229afddf02a2b1d99a/scipy/integrate/_ivp/rk.py#L293   // default was: 0.04; // ?
+    let safety_factor = 0.9;
+    let beta = 0.; // setting this to 0 gives us an alpha of 0.2 (should match scipy) 
+    // and doesn't do the previous error ** beta, which scipy doesn't do either.  https://github.com/scipy/scipy/blob/6b657ede0c3c4cffef3156229afddf02a2b1d99a/scipy/integrate/_ivp/rk.py#L293   // default was: 0.04; // ?
     let fac_min = 0.2;
-    let fac_max = 100.;
+    let fac_max = 10.;
     let h_max = x_end-x;
     let n_max = 100000;
     let n_stiff = 1000;
