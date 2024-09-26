@@ -10,13 +10,24 @@ impl System<Time, State> for MyThingToSolve {
     fn system(&self, _x: Time, y: &State, dy: &mut State) {
         dy[0] = -0.5 * y[0]
     }
+}
 
-    // TODO there's a solout function we can implement here
-    // may give us the behaviour we need to exit early
+struct MyThingToSolveWithEarlyExitCondition {}
+
+impl System<Time, State> for MyThingToSolveWithEarlyExitCondition {
+    fn system(&self, _x: Time, y: &State, dy: &mut State) {
+        dy[0] = -0.5 * y[0]
+    }
+    
+    // Stop function called at every successful integration step. The integration is stopped when this function returns true.
+    fn solout(&mut self, x: Time, y: &State, dy: &State) -> bool {
+        dbg!(x, y, dy);
+        y[0] < 0.3
+    }
 }
 
 fn main() {
-    let f = MyThingToSolve {}; // f - Structure implementing the System trait
+    let f = MyThingToSolveWithEarlyExitCondition {}; // f - Structure implementing the System trait
     let x: Time = 0.; // x - Initial value of the independent variable (usually time)
     let x_end: Time = 5.; // x_end - Final value of the independent variable
 
