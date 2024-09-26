@@ -22,29 +22,24 @@ fn main() {
 
     // Problem 1 - Python doesn't take a timestep (dx). Seems to figure it out itself...
     let dx = 0.; // dx - Increment in the dense output. This argument has no effect if the output type is Sparse
-     
+
     let y0: State = State::new(2.); // y - Initial value of the dependent variable(s)
 
     // scipy docs: Default values are 1e-3 for rtol and 1e-6 for atol.
 
-    let rtol = 1e-3; // rtol - Relative tolerance used in the computation of the adaptive step size
-    let atol = 1e-6; // 0.0000000001; // atol - Absolute tolerance used in the computation of the adaptive step size
-    let h = 0.;
-    let safety_factor = 0.9;
-    let beta = 0.; // setting this to 0 gives us an alpha of 0.2 (should match scipy) 
-    // and doesn't do the previous error ** beta, which scipy doesn't do either.  https://github.com/scipy/scipy/blob/6b657ede0c3c4cffef3156229afddf02a2b1d99a/scipy/integrate/_ivp/rk.py#L293   // default was: 0.04; // ?
-    let fac_min = 0.2;
-    let fac_max = 10.;
+    // scipy implementation for reference:
+    // https://github.com/scipy/scipy/blob/6b657ede0c3c4cffef3156229afddf02a2b1d99a/scipy/integrate/_ivp/rk.py#L293
+    let rtol = 1e-3; // rtol - set from scipy docs - Relative tolerance used in the computation of the adaptive step size
+    let atol = 1e-6; // atol - set from scipy docs - Absolute tolerance used in the computation of the adaptive step size
+    let h = 0.; // initial step size - 0
+    let safety_factor = 0.9; // matches scipy implementation
+    let beta = 0.; // setting this to 0 gives us an alpha of 0.2 and matches scipy's adaptive step size logic (default was 0.04)
+    let fac_min = 0.2; // matches scipy implementation
+    let fac_max = 10.; // matches scipy implementation
     let h_max = x_end-x;
     let n_max = 100000;
     let n_stiff = 1000;
 
-    // ode_solvers has a adaptive step function which gives similar (but different) results to the one used 
-    // by scipy solve_ivp.
-
-    // next steps:
-    // - can we replicate the adaptive step size function?
-    // - is it good enough without doing that?
     let mut stepper = Dopri5::from_param(f, x, x_end, dx, y0, rtol, atol, safety_factor, beta, fac_min, fac_max, h_max, h, n_max, n_stiff, OutputType::Sparse);
 
     let integration_statistics = stepper.integrate();
@@ -54,8 +49,9 @@ fn main() {
     let y_output = stepper.y_out(); // Getter for the dependent variables' output
     println!("X Output: {:?}", x_output);
     println!("Y Output: {:?}", y_output);
+    println!("Last Y Output: {:?}", y_output.last());
 
-    let result = stepper.results();
-
-    println!("Result: {:?}", result);
+    // commented out for now - results looks to be a combination of x_output and y_output
+    // let result = stepper.results();
+    // println!("Result: {:?}", result);
 }
